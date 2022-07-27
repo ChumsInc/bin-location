@@ -1,0 +1,96 @@
+$brand-primary:         darken(#428bca, 6.5%) !default; // #337ab7
+$brand-success:         #5cb85c !default;
+$brand-info:            #5bc0de !default;
+$brand-warning:         #f0ad4e !default;
+$brand-danger:          #d9534f !default;
+
+#app {
+  margin-bottom: 50px;
+
+  #item-list {
+    tr {
+      &.checked {
+        td {
+          background-color: #f7e741;
+        }
+      }
+    }
+    td.move {
+      background-color: $brand-danger;
+      color: #ffffff;
+      font-weight: bold;
+      text-align: center;
+    }
+  }
+
+  .save-form {
+    position: fixed;
+    bottom: 0;
+    height: 50px;
+    background-color: rgba(255,255,255,0.9);
+    padding: 10px;
+    border: 1px solid #F00;
+    z-index: 2000;
+    &.form-inline {
+      .form-group {
+        display: inline-block;
+      }
+    }
+  }
+  @media (max-width: 767px) {
+    .save-form {
+      width: 100%;
+      .new-bin {
+        width: 6em;
+      }
+    }
+  }
+
+  @media (min-width: 768px) {
+    .form-inline {
+      .form-group {
+        margin-right: 10px;
+        label {
+          padding-right: 3px;
+        }
+      }
+      button {
+        margin-right: 10px;
+      }
+    }
+  }
+
+  .badge {
+    margin-right: 0.25rem;
+    border: 1px solid #aaa;
+    cursor: pointer;
+  }
+
+  table {
+    font-family: "Roboto Mono", Consolas, "Lucida Console", "Courier New", monospace;
+    input[type="text"] {
+      max-width: 8rem;
+      font-family: "Roboto Mono", Consolas, "Lucida Console", "Courier New", monospace;
+    }
+    th:first-child,
+    td:first-child,
+    th.item-description,
+    td.item-description {
+      display: none;
+    }
+
+    @media screen and (min-width: 768px)  {
+      th:first-child,
+      td:first-child {
+        display: table-cell;
+      }
+    }
+
+    @media screen and (min-width: 992px)  {
+      th.item-description,
+      td.item-description {
+        display: table-cell;
+      }
+    }
+  }
+}
