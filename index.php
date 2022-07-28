@@ -14,7 +14,7 @@ enable_error_reporting(true);
 $bodyPath = "apps/bin-location";
 $title = "Bin Location";
 
-$ui = new WebUI($bodyPath, $title, '', true, true);
+$ui = new WebUI($bodyPath, $title, '', true, 5);
 $ui->version = "2020.06.03.1225";
 
 $ui->AddCSS("public/bin-location.css?v={$ui->version}");
