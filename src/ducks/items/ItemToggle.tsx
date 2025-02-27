@@ -20,7 +20,7 @@ const ItemToggle = ({item}: ItemToggleProps) => {
     return (
         <FormCheck>
             {/*<FormCheck.Label htmlFor={id}>Selected</FormCheck.Label>*/}
-            <FormCheck.Input type="checkbox"
+            <FormCheck.Input type="checkbox" id={id}
                    aria-label={`Toggle ${WarehouseCode}/${ItemCode} selected`}
                    checked={item.selected ?? false} onChange={changeHandler}/>
         </FormCheck>

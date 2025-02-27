@@ -51,7 +51,7 @@ export class SwipeableBinLocation {
         if (!binParser.test(location)) {
             return null;
         }
-        const [full, aisle, side, section] = binParser.exec(location) || [];
+        const [_, aisle, side, section] = binParser.exec(location) || [];
         if (!aisle || !side || !section) {
             return null;
         }

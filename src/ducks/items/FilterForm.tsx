@@ -1,7 +1,6 @@
 import React, {FormEvent} from 'react';
 import WarehouseSelect from "../warehouse/WarehouseSelect";
 import {useAppDispatch} from "@/app/configureStore";
-import ItemSearch from "./ItemSearch";
 import BinLocationFilter from "./BinLocationFilter";
 import LoadItemsButton from "./LoadItemsButton";
 import {loadItems} from "@/ducks/items/actions";
@@ -26,7 +25,7 @@ const FilterForm = () => {
             <div className="col-auto">
                 <BinLocationFilter/>
             </div>
-            <div className="col" />
+            <div className="col"/>
             <div className="col-auto">
                 <LoadItemsButton/>
             </div>

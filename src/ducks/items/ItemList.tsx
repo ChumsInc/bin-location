@@ -12,7 +12,6 @@ import {
     setSort
 } from "./index";
 import ItemToggle from "./ItemToggle";
-import BinLocationFindReplace from "./BinLocationFindReplace";
 import SwipeContainer from "./SwipeContainer";
 import SelectAll from "./SelectAll";
 import ActionLabel from "./ActionLabel";
@@ -21,12 +20,10 @@ import {EditableBinLocation} from "@/types/bin-location";
 import {itemKey} from "@/utils/bin-location";
 import SaveItemButton from "@/ducks/items/SaveItemButton";
 
-const reBinLocation = /((\d{1,2})([AB])(\d{1,2}))/;
-
 export const itemListFields: SortableTableField<EditableBinLocation>[] = [
     {
         field: 'WarehouseCode',
-        title: <SelectAll />,
+        title: <SelectAll/>,
         sortable: false,
 
         render: (row: EditableBinLocation) => <ItemToggle item={row}/>,
@@ -68,7 +65,8 @@ export const itemListFields: SortableTableField<EditableBinLocation>[] = [
                     item={row}/></SwipeContainer>
             )
     },
-    {field: 'changed',
+    {
+        field: 'changed',
         title: <ActionLabel/>,
         sortable: true,
         render: (row) => (<SaveItemButton item={row}/>)

@@ -1,16 +1,9 @@
-import {
-    createAction,
-    createEntityAdapter,
-    createReducer,
-    createSelector,
-    createSlice,
-    PayloadAction
-} from "@reduxjs/toolkit";
-import {RootState} from "../../app/configureStore";
-import {itemKey} from "../../api/items";
+import {createAction, createEntityAdapter, createSelector, createSlice, PayloadAction} from "@reduxjs/toolkit";
+import {RootState} from "@/app/configureStore";
+import {itemKey} from "@/api/items";
 import {binLocationSorter} from "./utils";
 import {loadItem, loadItems, saveBinLocation} from "@/ducks/items/actions";
-import {EditableBinLocation, SetSelectedBinLocationArg, UpdateBinLocationArg} from "@/types/bin-location";
+import {EditableBinLocation, SetSelectedBinLocationArg} from "@/types/bin-location";
 import {SortProps} from "@chumsinc/sortable-tables";
 import {dismissAlert} from "@chumsinc/alert-list";
 
@@ -69,25 +62,25 @@ const itemsSlice = createSlice({
         setSearch: (state, action: PayloadAction<string>) => {
             state.search = action.payload;
         },
-        setPage: (state, action:PayloadAction<number>) => {
+        setPage: (state, action: PayloadAction<number>) => {
             state.page = action.payload;
         },
-        setRowsPerPage: (state, action:PayloadAction<number>) => {
+        setRowsPerPage: (state, action: PayloadAction<number>) => {
             state.rowsPerPage = action.payload;
             state.page = 0;
         },
-        setSort: (state, action:PayloadAction<SortProps<EditableBinLocation>>) => {
+        setSort: (state, action: PayloadAction<SortProps<EditableBinLocation>>) => {
             state.sort = action.payload;
             state.page = 0;
         },
         toggleSelected: (state, action: PayloadAction<SetSelectedBinLocationArg>) => {
             itemsAdapter.updateOne(state, {id: itemKey(action.payload), changes: {selected: action.payload.selected}})
         },
-        toggleManySelected: (state, action:PayloadAction<SetSelectedBinLocationArg[]>) => {
+        toggleManySelected: (state, action: PayloadAction<SetSelectedBinLocationArg[]>) => {
             const changes = action.payload.map(bl => ({id: itemKey(bl), changes: {selected: bl.selected}}));
             itemsAdapter.updateMany(state, changes);
         },
-        updateItem: (state, action:PayloadAction<EditableBinLocation>) => {
+        updateItem: (state, action: PayloadAction<EditableBinLocation>) => {
             itemsAdapter.updateOne(state, {
                 id: itemKey(action.payload),
                 changes: {
@@ -96,7 +89,7 @@ const itemsSlice = createSlice({
                 }
             });
         },
-        setItemEditing: (state, action:PayloadAction<EditableBinLocation>) => {
+        setItemEditing: (state, action: PayloadAction<EditableBinLocation>) => {
             itemsAdapter.updateOne(state, {
                 id: itemKey(action.payload),
                 changes: {
@@ -179,20 +172,13 @@ export const setExecFindReplaceAction = createAction('items/execFindReplace');
 export const selectChangedItemCount = createSelector(
     [itemSelectors.selectAll],
     (list) => {
-    return list.filter(item => item.BinLocation !== (item.newBinLocation ?? item.BinLocation))
-        .length;
-});
+        return list.filter(item => item.BinLocation !== (item.newBinLocation ?? item.BinLocation))
+            .length;
+    });
 
 export const selectFilteredItems = createSelector(
     [itemSelectors.selectAll, selectSearch, selectSort],
     (items, search, sort) => {
-        let regex = /\\b/;
-        try {
-            const _itemFilter = search.replace(/^/, '\\b')
-                .replace('%', '');
-            regex = new RegExp(_itemFilter, 'i');
-        } catch (err: unknown) {
-        }
         return items
             .filter(item => !search || item.ItemCode.toLowerCase().includes(search.toLowerCase())
                 || (item.ItemCodeDesc ?? '').toLowerCase().includes(search.toLowerCase())
