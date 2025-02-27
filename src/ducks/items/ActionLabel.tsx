@@ -1,12 +1,12 @@
 import {useSelector} from "react-redux";
-import {selectChangedItems} from "./index";
+import {selectChangedItemCount} from "./index";
 
 const ActionLabel = () => {
-    const changed = useSelector(selectChangedItems);
+    const changed = useSelector(selectChangedItemCount);
     return (
         <span>
             Action
-            {changed.length > 0 && (<span>({changed.length})</span>)}
+            {changed > 0 && (<span className="ms-1">({changed})</span>)}
         </span>
     )
 }

@@ -1,9 +1,9 @@
 import {ReactNode} from "react";
-import {useAppDispatch} from "../../app/configureStore";
-import {setItemEditing, updateItemAction} from "./index";
-import {binLocations, SwipeableBinLocation} from "./utils";
+import {useAppDispatch} from "@/app/configureStore";
+import {setItemEditing, updateItem} from "./index";
+import {parseBinLocations, SwipeableBinLocation} from "./utils";
 import {useSwipeable} from "react-swipeable";
-import {EditableBinLocation} from "../../types";
+import {EditableBinLocation} from "@/types/bin-location";
 
 export interface SwipeContainerProps {
     item: EditableBinLocation;
@@ -14,30 +14,30 @@ export interface SwipeContainerProps {
 
 const SwipeContainer = ({item, allowClick, allowTap, children}: SwipeContainerProps) => {
     const dispatch = useAppDispatch();
-    const locations = binLocations(item.BinLocation) || [];
+    const locations = parseBinLocations(item.newBinLocation ?? item.BinLocation);
 
     const onSwipedLeft = () => {
         const [_bin, ...rest] = locations;
-        const bin = SwipeableBinLocation.parse(_bin || '');
+        const bin = SwipeableBinLocation.parse(_bin ?? '');
         if (bin) {
             bin.onSwipeLeft();
             const location = [bin.toString(), ...rest].join(' ');
-            dispatch(updateItemAction(item.key, location))
+            dispatch(updateItem({...item, newBinLocation: location, editing: false}));
         }
     }
 
     const onSwipedRight = () => {
         const [_bin, ...rest] = locations;
-        const bin = SwipeableBinLocation.parse(_bin || '');
+        const bin = SwipeableBinLocation.parse(_bin ?? '');
         if (bin) {
             bin.onSwipeRight();
             const location = [bin.toString(), ...rest].join(' ');
-            dispatch(updateItemAction(item.key, location))
+            dispatch(updateItem({...item, newBinLocation: location, editing: false}));
         }
     }
 
-    const onTap = allowTap ? () => dispatch(setItemEditing(item.key)) : undefined;
-    const onClick = allowClick ? () => dispatch(setItemEditing(item.key)) : undefined;
+    const onTap = allowTap ? () => dispatch(setItemEditing({...item, editing: true})) : undefined;
+    const onClick = allowClick ? () => dispatch(setItemEditing({...item, editing: true})) : undefined;
 
     const swipeHandlers = useSwipeable({
         onSwipedLeft,

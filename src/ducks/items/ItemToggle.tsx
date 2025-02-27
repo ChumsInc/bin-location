@@ -1,20 +1,29 @@
-import {useAppDispatch} from "../../app/configureStore";
-import {useSelector} from "react-redux";
-import {selectItemByKey, toggleItemSelectedAction} from "./index";
-import {ChangeEvent} from "react";
+import {useAppDispatch} from "@/app/configureStore";
+import {toggleSelected} from "./index";
+import {ChangeEvent, useId} from "react";
+import {EditableBinLocation} from "@/types/bin-location";
+import {FormCheck} from "react-bootstrap";
 
 export interface ItemToggleProps {
-    itemKey:string,
+    item: EditableBinLocation;
 }
 
-const ItemToggle = ({itemKey}:ItemToggleProps) => {
+const ItemToggle = ({item}: ItemToggleProps) => {
     const dispatch = useAppDispatch();
-    const item = useSelector(selectItemByKey(itemKey));
-    const changeHandler = (ev:ChangeEvent<HTMLInputElement>) => {
-        dispatch(toggleItemSelectedAction(itemKey, ev.target.checked));
+    const {WarehouseCode, ItemCode} = item;
+    const id = useId();
+
+    const changeHandler = (ev: ChangeEvent<HTMLInputElement>) => {
+        dispatch(toggleSelected({WarehouseCode, ItemCode, selected: ev.target.checked}));
     }
+
     return (
-        <input type="checkbox" checked={item.selected || false} onChange={changeHandler} className="form-check-input" />
+        <FormCheck>
+            {/*<FormCheck.Label htmlFor={id}>Selected</FormCheck.Label>*/}
+            <FormCheck.Input type="checkbox"
+                   aria-label={`Toggle ${WarehouseCode}/${ItemCode} selected`}
+                   checked={item.selected ?? false} onChange={changeHandler}/>
+        </FormCheck>
     )
 }
 

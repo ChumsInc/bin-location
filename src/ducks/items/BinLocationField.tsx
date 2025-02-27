@@ -1,13 +1,10 @@
 import React, {ChangeEvent, useEffect, useState} from 'react';
-import {useSelector} from 'react-redux';
-import {saveItemAction, selectItemByKey, selectItemsLoading, undoItemChange, updateItemAction} from "./index";
-import {Badge} from "chums-components";
-import {useSwipeable} from "react-swipeable";
-import {binLocations, SwipeableBinLocation} from "./utils";
-import {useAppDispatch} from "../../app/configureStore";
-import classNames from "classnames";
-import {BinLocation} from "chums-types";
-import {EditableBinLocation} from "../../types";
+import {setItemEditing, updateItem} from "./index";
+import Badge from "react-bootstrap/Badge";
+import {useAppDispatch} from "@/app/configureStore";
+import {EditableBinLocation} from "@/types/bin-location";
+import {Button, FormControl, InputGroup} from "react-bootstrap";
+import {parseBinLocations} from "@/ducks/items/utils";
 
 
 export interface BinLocationFieldProps {
@@ -16,36 +13,46 @@ export interface BinLocationFieldProps {
 
 const BinLocationField = ({item}: BinLocationFieldProps) => {
     const dispatch = useAppDispatch();
-    const locations = binLocations((item.changed || item.editing) ? item.newBinLocation || '' : item.BinLocation) || [];
+    const [locations, setLocations] = useState<string[]>(parseBinLocations(item.newBinLocation ?? item.BinLocation));
+
+    useEffect(() => {
+        setLocations(parseBinLocations(item.newBinLocation ?? item.BinLocation));
+    }, [item])
+
     const bgColor = 'dark';
 
-    const changeHandler = (ev:ChangeEvent<HTMLInputElement>) => {
-        dispatch(updateItemAction(item.key, ev.target.value.toUpperCase()));
+    const changeHandler = (ev: ChangeEvent<HTMLInputElement>) => {
+        dispatch(updateItem({...item, newBinLocation: ev.target.value}));
     }
 
     const undoHandler = () => {
-        dispatch(undoItemChange(item.key));
+        dispatch(updateItem({...item, newBinLocation: item.BinLocation, editing: false}));
     }
 
-    const saveHandler = () => {
-        dispatch(saveItemAction(item));
+    const onClickNew = () => {
+        dispatch(setItemEditing({...item, editing: true}));
     }
+
     return (
-        <div className="d-flex flex-row">
-            <div className={classNames({'d-none':item.editing})}>
-                {locations.map((loc, index) => (
-                    <Badge key={index} color={bgColor}>{loc}</Badge>
-                ))}
-            </div>
-            <div className={classNames("input-group inout-group-sm", {'d-none': !item.editing})}>
-                <input type="text" className="form-control form-control-sm"
-                       maxLength={10}
-                       value={item.newBinLocation} onChange={changeHandler}/>
-                <button className="btn btn-sm btn-outline-warning" onClick={undoHandler}>
-                    <span className="bi-arrow-counterclockwise" />
-                </button>
-            </div>
-            {!item.editing && !item.BinLocation && <button className="btn btn-xs btn-outline-info">New</button> }
+        <div className="d-flex flex-row g-1">
+            {!item.editing && (
+                locations.map((loc, index) => (
+                    <Badge key={index} bg={bgColor}>{loc}</Badge>)
+                )
+            )}
+            {item.editing && (
+                <InputGroup size="sm">
+                    <FormControl type="text" size="sm"
+                                 value={item.newBinLocation ?? item.BinLocation}
+                                 onChange={changeHandler}/>
+                    <Button variant="outline-secondary" size="sm" onClick={undoHandler}>
+                        <span className="bi-arrow-counterclockwise" aria-label="Undo changes"/>
+                    </Button>
+                </InputGroup>
+            )}
+            {!item.editing && !item.BinLocation && (
+                <Button variant="outline-info" size="sm" onClick={onClickNew}>New</Button>
+            )}
         </div>
     )
 }

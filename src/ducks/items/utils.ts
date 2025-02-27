@@ -1,38 +1,35 @@
-import {BinLocationSortProps, EditableBinLocation} from "../../types";
-import {itemKey} from "../../api/items";
-import {BinLocation} from "chums-types";
+import {SortProps} from "@chumsinc/sortable-tables";
+import {EditableBinLocation} from "@/types/bin-location";
+import {itemKey} from "@/utils/bin-location";
 
-export const binLocationSorter = (sort: BinLocationSortProps) => (a: EditableBinLocation, b: EditableBinLocation) => {
-    // if (a.editing || b.editing) {
-    //     return (a.editing === b.editing
-    //         ? (a.key > b.key ? 1 : -1)
-    //          : (Number(a.editing) - Number(b.editing))) * (sort.ascending ? 1 : -1);
-    // }
+
+export const binLocationSorter = (sort: SortProps<EditableBinLocation>) => (a: EditableBinLocation, b: EditableBinLocation) => {
+    const sortMod = sort.ascending ? 1 : -1;
     switch (sort.field) {
     case "ItemCode":
     case 'WarehouseCode':
         return (
             a[sort.field].toLowerCase() === b[sort.field].toLowerCase()
-                ? (a.key > b.key ? 1 : -1)
+                ? (itemKey(a).localeCompare(itemKey(b)))
                 : (a[sort.field].toLowerCase() > b[sort.field].toLowerCase() ? 1 : -1)
-        ) * (sort.ascending ? 1 : -1)
+        ) * sortMod
     case "BinLocation":
     case 'ItemCodeDesc':
     case 'SalesUnitOfMeasure':
         return (
-            (a[sort.field] || '').toLowerCase() === (b[sort.field] || '').toLowerCase()
-                ? (a.key > b.key ? 1 : -1)
+            (a[sort.field] ?? '').toLowerCase() === (b[sort.field] ?? '').toLowerCase()
+                ? (itemKey(a).localeCompare(itemKey(b)))
                 : ((a[sort.field] || '').toLowerCase() > (b[sort.field] || '').toLowerCase() ? 1 : -1)
-        ) * (sort.ascending ? 1 : -1)
+        ) * sortMod
     case 'changed':
     case 'selected':
         return (
-            (a[sort.field] ? -1 : 0) === (b[sort.field] ? -1 : 0)
-                ? (a.key > b.key ? 1 : -1)
-                : ((a[sort.field] ? -1 : 0) > (b[sort.field] ? -1 : 0) ? 1 : -1)
-        ) * (sort.ascending ? 1 : -1)
+            (a[sort.field] ? 1 : 0) === (b[sort.field] ? 1 : 0)
+                ? (itemKey(a).localeCompare(itemKey(b)))
+                : ((a[sort.field] ? 1 : 0) > (b[sort.field] ? 1 : 0) ? 1 : -1)
+        ) * sortMod
     default:
-        return (a.key > b.key ? 1 : -1) * (sort.ascending ? 1 : -1)
+        return (itemKey(a).localeCompare(itemKey(b))) * sortMod
     }
 }
 
@@ -95,8 +92,8 @@ export class SwipeableBinLocation {
     }
 }
 
-export const binLocations = (loc: string) => {
-    return loc.trim()
+export const parseBinLocations = (binLocation?: string):string[] => {
+    return (binLocation ?? '').trim()
         .replace(/\s+/, ' ')
         .split(' ');
 }

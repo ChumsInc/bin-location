@@ -1,46 +1,58 @@
-import {createAsyncThunk, createReducer} from "@reduxjs/toolkit";
+import {createEntityAdapter, createSelector, createSlice, PayloadAction} from "@reduxjs/toolkit";
 import {Warehouse} from "chums-types";
-import {fetchWarehouseList} from "../../api/warehouse";
-import {RootState} from "../../app/configureStore";
+import {RootState} from "@/app/configureStore";
+import {loadWarehouses} from "@/ducks/warehouse/actions";
 
-export const loadWarehouseList = 'warehouse/list/load';
-export const loadWarehouseListAction = createAsyncThunk<{ list: Warehouse[], clearContext?: string }>(
-    loadWarehouseList,
-    async (asd, thunkAPI) => {
-        const list = await fetchWarehouseList();
-        return {list, clearContext: loadWarehouseList};
-    }
-);
-
-export const selectWarehouseList = (state: RootState): Warehouse[] => state.warehouse.list;
-export const selectWarehousesLoading = (state: RootState): boolean => state.warehouse.loading;
-export const selectWarehousesLoaded = (state: RootState): boolean => state.warehouse.loaded;
-
-
-export interface FiltersState {
-    list: Warehouse[],
-    loading: boolean,
-    loaded: boolean,
-}
-
-export const defaultFiltersState: FiltersState = {
-    list: [],
-    loading: false,
-    loaded: false,
-}
-const filtersReducer = createReducer(defaultFiltersState, (builder) => {
-    builder
-        .addCase(loadWarehouseListAction.pending, (state, action) => {
-            state.loading = true;
-        })
-        .addCase(loadWarehouseListAction.fulfilled, (state, action) => {
-            state.list = action.payload.list || [];
-            state.loading = false;
-            state.loaded = true;
-        })
-        .addCase(loadWarehouseListAction.rejected, (state, action) => {
-            state.loading = false;
-        });
+const warehouseAdapter = createEntityAdapter<Warehouse, string>({
+    selectId: (whse) => whse.WarehouseCode,
+    sortComparer: (a, b) => a.WarehouseCode.localeCompare(b.WarehouseCode),
 })
 
-export default filtersReducer;
+interface WarehouseExtraState {
+    status: 'idle' | 'loading' | 'rejected';
+    current: string | null;
+}
+
+const extraState: WarehouseExtraState = {
+    status: 'idle',
+    current: null
+};
+
+const warehouseSlice = createSlice({
+    name: 'warehouse',
+    initialState: warehouseAdapter.getInitialState(extraState),
+    reducers: {
+        setCurrentWarehouse: (state, action: PayloadAction<string | null>) => {
+            state.current = action.payload;
+        }
+    },
+    extraReducers: (builder) => {
+        builder
+            .addCase(loadWarehouses.pending, (state) => {
+                state.status = 'loading';
+            })
+            .addCase(loadWarehouses.fulfilled, (state, action) => {
+                state.status = 'idle';
+                warehouseAdapter.setAll(state, action.payload);
+            })
+            .addCase(loadWarehouses.rejected, (state) => {
+                state.status = 'rejected';
+            })
+    },
+    selectors: {
+        selectWarehouseStatus: (state) => state.status,
+        selectCurrentWarehouse: (state) => state.current,
+    }
+})
+export const {selectWarehouseStatus, selectCurrentWarehouse} = warehouseSlice.selectors
+const warehouseSelectors = warehouseAdapter.getSelectors<RootState>((state) => state.warehouse);
+
+export const selectWarehouses = createSelector(
+    [warehouseSelectors.selectAll],
+    (list) => {
+        return list
+            .filter(warehouse => warehouse.WarehouseStatus === 'A')
+            .sort((a, b) => a.WarehouseCode.localeCompare(b.WarehouseCode));
+    })
+
+export default warehouseSlice;

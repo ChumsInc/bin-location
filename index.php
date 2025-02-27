@@ -6,17 +6,20 @@
  * @copyright Copyright &copy; 2011, steve
  */
 
+
+use chums\ui\WebUI2;
+use chums\ui\CSSOptions;
+use chums\user\Groups;
+
+
+
 require_once ("autoload.inc.php");
-require_once ("access.inc.php");
 
-enable_error_reporting(true);
-
-$bodyPath = "apps/bin-location";
-$title = "Bin Location";
-
-$ui = new WebUI($bodyPath, $title, '', true, 5);
-$ui->version = "2020.06.03.1225";
-
-$ui->AddCSS("public/bin-location.css?v={$ui->version}");
-$ui->addManifest('public/js/manifest.json');
-$ui->Send();
+$ui = new WebUI2([
+    'contentFile' => 'body.inc.php',
+    'title' => 'Bin Location',
+    'requiredRoles' => [Groups::CS, Groups::PRODUCTION, Groups::SALES],
+]);
+$ui->addCSS('public/bin-location.css', CSSOptions::parse(['useTimestampVersion' => true]))
+    ->addManifestJSON('public/js/manifest.json')
+    ->render();

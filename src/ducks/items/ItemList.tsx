@@ -1,25 +1,35 @@
 import React from 'react';
 import {useSelector} from 'react-redux';
 import BinLocationField from "./BinLocationField";
-import {EditableBinLocation, SortableBinLocationField} from "../../types";
-import {useAppDispatch} from "../../app/configureStore";
-import {itemListTableKey, selectFilteredDataLength, selectPagedItemList} from "./index";
-import {ConnectedPager, ConnectedTable, setPageAction, SorterProps} from "chums-connected-components";
+import {useAppDispatch, useAppSelector} from "@/app/configureStore";
+import {
+    selectFilteredItems,
+    selectPage,
+    selectRowsPerPage,
+    selectSort,
+    setPage,
+    setRowsPerPage,
+    setSort
+} from "./index";
 import ItemToggle from "./ItemToggle";
 import BinLocationFindReplace from "./BinLocationFindReplace";
 import SwipeContainer from "./SwipeContainer";
-import ActionField from "./ActionField";
 import SelectAll from "./SelectAll";
 import ActionLabel from "./ActionLabel";
+import {SortableTable, SortableTableField, SortProps, TablePagination} from "@chumsinc/sortable-tables";
+import {EditableBinLocation} from "@/types/bin-location";
+import {itemKey} from "@/utils/bin-location";
+import SaveItemButton from "@/ducks/items/SaveItemButton";
 
 const reBinLocation = /((\d{1,2})([AB])(\d{1,2}))/;
 
-export const itemListFields: SortableBinLocationField[] = [
+export const itemListFields: SortableTableField<EditableBinLocation>[] = [
     {
-        field: 'selected',
+        field: 'WarehouseCode',
         title: <SelectAll />,
         sortable: false,
-        render: (row: EditableBinLocation) => <ItemToggle itemKey={row.key}/>
+
+        render: (row: EditableBinLocation) => <ItemToggle item={row}/>,
     },
     {
         field: 'WarehouseCode',
@@ -58,31 +68,42 @@ export const itemListFields: SortableBinLocationField[] = [
                     item={row}/></SwipeContainer>
             )
     },
-    {field: 'changed', title: <ActionLabel />, sortable: true, render: (row) => (<ActionField item={row}/>)}
+    {field: 'changed',
+        title: <ActionLabel/>,
+        sortable: true,
+        render: (row) => (<SaveItemButton item={row}/>)
+    }
 ];
-
-const defaultSort: SorterProps = {
-    field: 'key',
-    ascending: true,
-}
 
 const ItemList = () => {
     const dispatch = useAppDispatch();
-    const rows = useSelector(selectPagedItemList);
-    const filteredLength = useSelector(selectFilteredDataLength);
+    const rows = useSelector(selectFilteredItems);
+    const page = useAppSelector(selectPage);
+    const rowsPerPage = useAppSelector(selectRowsPerPage);
+    const sort = useAppSelector(selectSort);
 
 
-    const sortChangeHandler = () => {
-        dispatch(setPageAction({key: itemListTableKey, page: 1}));
+    const pageChangeHandler = (page: number) => {
+        dispatch(setPage(page));
+    }
+    const rowsPerPageChangeHandler = (rpp: number) => {
+        dispatch(setRowsPerPage(rpp));
+    }
+
+
+    const sortChangeHandler = (sort: SortProps<EditableBinLocation>) => {
+        dispatch(setSort(sort));
     }
 
     return (
         <div className="mt-3">
-            <BinLocationFindReplace/>
-            <ConnectedTable tableKey={itemListTableKey} defaultSort={defaultSort}
-                            fields={itemListFields} data={rows} keyField={'key'}
-                            onChangeSort={sortChangeHandler} className="table-sticky"/>
-            <ConnectedPager pageSetKey={itemListTableKey} dataLength={filteredLength} defaultRowsPerPage={10}/>
+            <SortableTable currentSort={sort} onChangeSort={sortChangeHandler}
+                           fields={itemListFields}
+                           data={rows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)}
+                           keyField={(row) => itemKey(row)}/>
+            <TablePagination page={page} onChangePage={pageChangeHandler} size="sm"
+                             rowsPerPage={rowsPerPage} rowsPerPageProps={{onChange: rowsPerPageChangeHandler}}
+                             count={rows.length} showFirst showLast/>
         </div>
     )
 }

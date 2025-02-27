@@ -1,45 +1,39 @@
-import React, {ChangeEvent, useEffect} from 'react';
+import React, {ChangeEvent, useEffect, useId} from 'react';
 import {useSelector} from 'react-redux';
-import {useAppDispatch} from "../../app/configureStore";
-import {
-    loadWarehouseListAction,
-    selectWarehouseList,
-    selectWarehousesLoaded,
-    selectWarehousesLoading,
-} from "./index";
-import {selectCurrentWarehouse, setWarehouseFilterAction} from "../items";
+import {useAppDispatch, useAppSelector} from "@/app/configureStore";
+import {selectFilterWarehouse, setWarehouseFilter} from "../items";
+import {selectWarehouses, selectWarehouseStatus} from "@/ducks/warehouse/index";
+import {loadWarehouses} from "@/ducks/warehouse/actions";
+import {FormSelect, InputGroup} from "react-bootstrap";
 
 const WarehouseSelect = () => {
     const dispatch = useAppDispatch();
-    const loading = useSelector(selectWarehousesLoading);
-    const loaded = useSelector(selectWarehousesLoaded);
+    const status = useAppSelector(selectWarehouseStatus);
     useEffect(() => {
-        if (loading || loaded) {
-            return;
-        }
-        dispatch(loadWarehouseListAction());
+        dispatch(loadWarehouses());
     }, []);
-    const list = useSelector(selectWarehouseList);
-    const value = useSelector(selectCurrentWarehouse);
+    const list = useAppSelector(selectWarehouses);
+    const value = useSelector(selectFilterWarehouse);
+    const id = useId();
 
     const changeHandler = (ev: ChangeEvent<HTMLSelectElement>) => {
-        dispatch(setWarehouseFilterAction(ev.target.value));
+        dispatch(setWarehouseFilter(ev.target.value));
     }
 
     return (
-        <div className="input-group input-group-sm">
-            <span className="input-group-text">Whse</span>
-            <select className="form-select form-select-sm" value={value} onChange={changeHandler} disabled={loading}>
+        <InputGroup size="sm">
+            <InputGroup.Text as="label" htmlFor={id}>Warehouse</InputGroup.Text>
+            <FormSelect id={id} size="sm"
+                        value={value} onChange={changeHandler} disabled={status !== 'idle'}>
                 <option value="">All Warehouses</option>
                 {list
-                    .filter(whse => whse.WarehouseStatus === 'A')
-                    .map(whse => (
-                        <option value={whse.WarehouseCode} key={whse.WarehouseCode}>
-                            {whse.WarehouseCode} - {whse.WarehouseDesc}
+                    .map(warehouse => (
+                        <option value={warehouse.WarehouseCode} key={warehouse.WarehouseCode}>
+                            {warehouse.WarehouseCode} - {warehouse.WarehouseDesc}
                         </option>
                     ))}
-            </select>
-        </div>
+            </FormSelect>
+        </InputGroup>
     )
 }
 

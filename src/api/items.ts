@@ -1,26 +1,55 @@
-import {BinLocationList, EditableBinLocation} from "../types";
-import {fetchJSON} from "chums-components";
+import {fetchJSON} from "@chumsinc/ui-utils";
 import {BinLocation} from "chums-types";
 
-export const itemKey = (item: BinLocation) => `${item.WarehouseCode}/${item.ItemCode}`.toUpperCase();
+export const itemKey = (item: Pick<BinLocation, 'WarehouseCode'|'ItemCode'>) => `${item.WarehouseCode}/${item.ItemCode}`.toUpperCase();
 
-export const fetchItems = async (whse: string, item: string, binLocation: string): Promise<BinLocationList> => {
+interface BinLocationItemResponse {
+    warehouseCode: string;
+    itemCode: string;
+    item:BinLocation|null;
+}
+
+export interface FetchBinLocationArg {
+    warehouseCode: string;
+    itemCode: string;
+}
+export async function fetchItem(arg:FetchBinLocationArg): Promise<BinLocation|null> {
+    try {
+        const url = `/api/operations/shipping/bin-location/:warehouseCode/:itemCode.json`
+            .replace(':warehouseCode', encodeURIComponent(arg.warehouseCode))
+            .replace(':itemCode', encodeURIComponent(arg.itemCode));
+        const res = await fetchJSON<BinLocationItemResponse>(url, {cache: 'no-cache'});
+        return res?.item ?? null;
+    } catch(err:unknown) {
+        if (err instanceof Error) {
+            console.debug("fetchItem()", err.message);
+            return Promise.reject(err);
+        }
+        console.debug("fetchItem()", err);
+        return Promise.reject(new Error('Error in fetchItem()'));
+    }
+}
+
+export interface FetchBinLocationItemsArg {
+    warehouseCode?: string;
+    itemCode?: string;
+    binLocation?: string;
+}
+export async function fetchItems(arg:FetchBinLocationItemsArg): Promise<BinLocation[]> {
     try {
         const params = new URLSearchParams();
-        if (binLocation) {
-            params.set("binLocation", binLocation);
+        if (arg.warehouseCode) {
+            params.set('warehouseCode', arg.warehouseCode);
         }
-        const url = `/api/operations/shipping/bin-location/chums/:warehouseCode/:itemCode`
-                .replace(':warehouseCode', encodeURIComponent(whse || '%'))
-                .replace(':itemCode', encodeURIComponent(item))
-            + (binLocation ? `?${params.toString()}` : '')
-        const list = await fetchJSON<BinLocation[]>(url, {cache: 'no-cache'});
-        const items: BinLocationList = {};
-        list.forEach(item => {
-            const key = itemKey(item);
-            items[key] = {key, ...item};
-        });
-        return items;
+        if (arg.itemCode) {
+            params.set('itemCode', arg.itemCode);
+        }
+        if (arg.binLocation) {
+            params.set('binLocation', arg.binLocation);
+        }
+        const url = `/api/operations/shipping/bin-location/list.json?${params.toString()}`;
+        const res = await fetchJSON<BinLocation[]>(url, {cache: 'no-cache'});
+        return res ?? [];
     } catch (err: unknown) {
         if (err instanceof Error) {
             console.log("fetchItems()", err.message);
@@ -31,41 +60,24 @@ export const fetchItems = async (whse: string, item: string, binLocation: string
     }
 }
 
-export const fetchItem = async (id: string): Promise<EditableBinLocation> => {
-    try {
-        const [WarehouseCode, ItemCode] = id.split('/');
-        const url = `/api/operations/shipping/bin-location/chums/:warehouseCode/:itemCode`
-            .replace(':warehouseCode', encodeURIComponent(WarehouseCode))
-            .replace(':itemCode', encodeURIComponent(ItemCode))
-        const [item] = await fetchJSON<BinLocation[]>(url, {cache: 'no-cache'});
-        return {key: itemKey(item), ...item};
-    } catch (err: unknown) {
-        if (err instanceof Error) {
-            console.log("fetchItems()", err.message);
-            return Promise.reject(err);
-        }
-        console.log("fetchItems()", err);
-        return Promise.reject(new Error('Error in fetchItems()'));
-    }
-}
 
-export const postItem = async (_item: BinLocation): Promise<EditableBinLocation> => {
+export const postBinLocation = async (arg: BinLocation): Promise<BinLocation|null> => {
     try {
-        const url = `/api/operations/shipping/bin-location/chums/:warehouseCode/:itemCode`
-            .replace(':warehouseCode', encodeURIComponent(_item.WarehouseCode))
-            .replace(':itemCode', encodeURIComponent(_item.ItemCode))
+        const url = `/api/operations/shipping/bin-location/:warehouseCode/:itemCode.json`
+            .replace(':warehouseCode', encodeURIComponent(arg.WarehouseCode))
+            .replace(':itemCode', encodeURIComponent(arg.ItemCode))
 
-        const [item] = await fetchJSON<BinLocation[]>(url, {
+        const res = await fetchJSON<BinLocationItemResponse>(url, {
             method: 'put',
-            body: JSON.stringify(_item)
+            body: JSON.stringify(arg)
         });
-        return {key: itemKey(item), ...item};
+        return res?.item ?? null;
     } catch (err: unknown) {
         if (err instanceof Error) {
-            console.warn("postItem()", err.message);
+            console.warn("postBinLocation()", err.message);
             return Promise.reject(err);
         }
-        console.warn("postItem()", err);
-        return Promise.reject(new Error('Error in postItem()'));
+        console.warn("postBinLocation()", err);
+        return Promise.reject(new Error('Error in postBinLocation()'));
     }
 }

@@ -1,13 +1,17 @@
 import React from 'react';
-import {AlertList} from "chums-connected-components";
 import FilterForm from "../ducks/items/FilterForm";
 import ItemList from "../ducks/items/ItemList";
+import AppAlertsList from "@/app/AppAlertsList";
+import AppStatus from "@/ducks/items/AppStatus";
+import BinLocationActions from "@/ducks/items/BinLocationActions";
 
 const App = () => {
     return (
         <div className="container-lg">
-            <AlertList />
+            <AppAlertsList />
             <FilterForm />
+            <AppStatus />
+            <BinLocationActions />
             <ItemList />
         </div>
     )

@@ -1,14 +1,14 @@
-import {SpinnerButton} from "chums-components";
 import {useSelector} from "react-redux";
-import {selectItemsLoading} from "./index";
+import {selectItemsStatus} from "./index";
+import {Button} from "react-bootstrap";
 
 const LoadItemsButton = () => {
-    const loading = useSelector(selectItemsLoading);
+    const loading = useSelector(selectItemsStatus);
 
     return (
-        <SpinnerButton type="submit" spinning={loading} size="sm" color="primary">
+        <Button type="submit" disabled={loading !== 'idle'} size="sm" color="primary">
             Load
-        </SpinnerButton>
+        </Button>
     )
 }
 

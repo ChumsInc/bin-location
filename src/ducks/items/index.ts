@@ -1,104 +1,191 @@
-import {createAction, createAsyncThunk, createReducer, createSelector} from "@reduxjs/toolkit";
-import {BinLocationList, BinLocationSortProps, EditableBinLocation} from "../../types";
+import {
+    createAction,
+    createEntityAdapter,
+    createReducer,
+    createSelector,
+    createSlice,
+    PayloadAction
+} from "@reduxjs/toolkit";
 import {RootState} from "../../app/configureStore";
-import {fetchItems, postItem} from "../../api/items";
-import {selectCurrentPage, selectRowsPerPage, selectTableSort} from "chums-connected-components";
+import {itemKey} from "../../api/items";
 import {binLocationSorter} from "./utils";
-import {pageFilter} from "chums-components";
+import {loadItem, loadItems, saveBinLocation} from "@/ducks/items/actions";
+import {EditableBinLocation, SetSelectedBinLocationArg, UpdateBinLocationArg} from "@/types/bin-location";
+import {SortProps} from "@chumsinc/sortable-tables";
+import {dismissAlert} from "@chumsinc/alert-list";
 
 
-export const itemListTableKey = 'item-list';
-
-export const loadItemList = 'items/list/load';
-export const saveItem = 'items/list/saveItem';
-
-export const setWarehouseFilterAction = createAction<string>('items/filters/setWarehouse');
-export const setItemFilterAction = createAction<string>('items/filters/setItem');
-export const setBinLocationFilter = createAction<string | undefined>('items/filters/setBinLocation');
-export const setSearch = createAction<string|undefined>('items/setSearch');
-export const setFindAction = createAction<string>('items/setFind');
-export const setReplaceAction = createAction<string>('items/setReplace');
-export const setExecFindReplaceAction = createAction('items/execFindReplace');
-export const setItemAction = createAction<EditableBinLocation>('items/setItem');
-export const undoItemChange = createAction<string>('items/undoEdit');
-export const setItemEditing = createAction<string>('items/setEditing');
-export const updateItemAction = createAction('items/updateItem', (key: string, bin: string) => {
-    return {
-        payload: {
-            key,
-            bin,
-        }
-    }
+const itemsAdapter = createEntityAdapter<EditableBinLocation, string>({
+    selectId: (arg) => itemKey(arg),
+    sortComparer: (a, b) => itemKey(a).localeCompare(itemKey(b)),
 })
-export const toggleItemSelectedAction = createAction('items/toggleItemSelected', (key: string, force?: boolean) => {
-    return {
-        payload: {
-            key: key,
-            force: force
-        }
-    }
-});
-export const loadItemsListAction = createAsyncThunk<{ list: BinLocationList, clearContext?: string }>(
-    loadItemList,
-    async (_asd, thunkAPI) => {
-        try {
-            const state = thunkAPI.getState() as RootState;
-            const warehouseCode = selectCurrentWarehouse(state);
-            const item = selectItemFilter(state);
-            const binLocation = selectBinLocationFilter(state);
-            const list = await fetchItems(warehouseCode, item, binLocation);
-            return {list, clearContext: loadItemList};
-        } catch (err: unknown) {
-            if (err instanceof Error) {
-                console.log("loadItemsListAction()", err.message);
-                thunkAPI.rejectWithValue({error: err, context: loadItemList});
-            }
-            console.log("loadItemsListAction()", err);
-            return {list: {}};
-        }
-    }
-);
 
-export const saveItemAction = createAsyncThunk<{ item: EditableBinLocation, clearContext?: string }, EditableBinLocation>(
-    saveItem,
-    async (_item: EditableBinLocation, thunkAPI) => {
-        try {
-            if (_item.newBinLocation === undefined) {
-                return thunkAPI.rejectWithValue({error: new Error('new bin location is undefined'), context: saveItem});
-            }
-            const item = await postItem({..._item, BinLocation: _item.newBinLocation});
-            return {item, clearContext: saveItem};
-        } catch (err: unknown) {
-            if (err instanceof Error) {
-                console.log("saveItemAction()", err.message);
-                return thunkAPI.rejectWithValue({error: err, context: saveItem});
-            }
-            console.log("saveItemAction()", err);
-            return {item: _item};
-
-        }
-    }
+const itemSelectors = itemsAdapter.getSelectors<RootState>(
+    (state) => state.items
 )
 
-export const selectItemList = (state: RootState) => state.items.list;
-export const selectItemsLoading = (state: RootState) => state.items.loading;
-export const selectItemListLength = (state: RootState) => Object.keys(state.items.list).length;
-export const selectSelectedItemsLength = (state: RootState) => Object.values(state.items.list)
-    .filter(item => item.selected).length;
-export const selectCurrentWarehouse = (state: RootState): string => state.items.filters.warehouseCode;
-export const selectItemFilter = (state: RootState): string => state.items.filters.item;
-export const selectBinLocationFilter = (state: RootState): string => state.items.filters.binLocation;
-export const selectItemSearch = (state: RootState) => state.items.search;
-export const selectItemFind = (state: RootState) => state.items.find;
-export const selectItemReplace = (state: RootState) => state.items.replace;
-export const selectItemByKey = (key: string) => (state: RootState) => state.items.list[key];
-export const selectChangedItems = createSelector([selectItemList], (list) => {
-    return Object.values(list).filter(item => item.changed);
+
+export interface ItemFilter {
+    warehouseCode: string;
+    itemCode: string;
+    binLocation: string;
+}
+
+interface ExtraItemState {
+    status: 'idle' | 'loading' | 'saving' | 'rejected';
+    sort: SortProps<EditableBinLocation>;
+    page: number;
+    rowsPerPage: number;
+    search: string;
+    filter: ItemFilter
+}
+
+const extraState: ExtraItemState = {
+    status: 'idle',
+    sort: {field: 'WarehouseCode', ascending: true},
+    search: '',
+    page: 0,
+    rowsPerPage: 10,
+    filter: {
+        warehouseCode: '',
+        itemCode: '',
+        binLocation: '',
+    }
+}
+
+const itemsSlice = createSlice({
+    name: 'items',
+    initialState: itemsAdapter.getInitialState(extraState),
+    reducers: {
+        setWarehouseFilter: (state, action: PayloadAction<string>) => {
+            state.filter.warehouseCode = action.payload;
+        },
+        setItemFilter: (state, action: PayloadAction<string>) => {
+            state.filter.itemCode = action.payload;
+        },
+        setBinLocationFilter: (state, action: PayloadAction<string>) => {
+            state.filter.binLocation = action.payload;
+        },
+        setSearch: (state, action: PayloadAction<string>) => {
+            state.search = action.payload;
+        },
+        setPage: (state, action:PayloadAction<number>) => {
+            state.page = action.payload;
+        },
+        setRowsPerPage: (state, action:PayloadAction<number>) => {
+            state.rowsPerPage = action.payload;
+            state.page = 0;
+        },
+        setSort: (state, action:PayloadAction<SortProps<EditableBinLocation>>) => {
+            state.sort = action.payload;
+            state.page = 0;
+        },
+        toggleSelected: (state, action: PayloadAction<SetSelectedBinLocationArg>) => {
+            itemsAdapter.updateOne(state, {id: itemKey(action.payload), changes: {selected: action.payload.selected}})
+        },
+        toggleManySelected: (state, action:PayloadAction<SetSelectedBinLocationArg[]>) => {
+            const changes = action.payload.map(bl => ({id: itemKey(bl), changes: {selected: bl.selected}}));
+            itemsAdapter.updateMany(state, changes);
+        },
+        updateItem: (state, action:PayloadAction<EditableBinLocation>) => {
+            itemsAdapter.updateOne(state, {
+                id: itemKey(action.payload),
+                changes: {
+                    newBinLocation: action.payload.newBinLocation,
+                    editing: action.payload.editing ?? (action.payload.newBinLocation !== action.payload.BinLocation)
+                }
+            });
+        },
+        setItemEditing: (state, action:PayloadAction<EditableBinLocation>) => {
+            itemsAdapter.updateOne(state, {
+                id: itemKey(action.payload),
+                changes: {
+                    editing: action.payload.editing ?? true
+                }
+            })
+        }
+    },
+    extraReducers: (builder) => {
+        builder
+            .addCase(loadItems.pending, (state) => {
+                state.status = 'loading'
+            })
+            .addCase(loadItems.fulfilled, (state, action) => {
+                state.status = 'idle';
+                itemsAdapter.setAll(state, action.payload)
+                state.page = 0;
+            })
+            .addCase(loadItems.rejected, (state) => {
+                state.status = 'rejected';
+            })
+            .addCase(saveBinLocation.fulfilled, (state, action) => {
+                if (action.payload) {
+                    itemsAdapter.setOne(state, action.payload);
+                }
+            })
+            .addCase(loadItem.fulfilled, (state, action) => {
+                if (action.payload) {
+                    itemsAdapter.setOne(state, action.payload);
+                }
+            })
+            .addCase(dismissAlert, (state, action) => {
+                if (action.payload.context === loadItems.typePrefix) {
+                    state.status = 'idle';
+                }
+            })
+    },
+    selectors: {
+        selectItemsStatus: (state) => state.status,
+        selectFilterItem: (state) => state.filter.itemCode,
+        selectFilterWarehouse: (state) => state.filter.warehouseCode,
+        selectFilterBinLocation: (state) => state.filter.binLocation,
+        selectSearch: (state) => state.search,
+        selectPage: (state) => state.page,
+        selectRowsPerPage: (state) => state.rowsPerPage,
+        selectSort: (state) => state.sort,
+    }
+})
+
+export const {
+    selectItemsStatus,
+    selectFilterItem,
+    selectFilterWarehouse,
+    selectFilterBinLocation,
+    selectPage,
+    selectRowsPerPage,
+    selectSort,
+    selectSearch,
+} = itemsSlice.selectors;
+export const {
+    setItemFilter,
+    setWarehouseFilter,
+    setBinLocationFilter,
+    setSearch,
+    toggleSelected,
+    toggleManySelected,
+    setPage,
+    setRowsPerPage,
+    setSort,
+    updateItem,
+    setItemEditing,
+} = itemsSlice.actions;
+
+export default itemsSlice;
+
+
+export const setExecFindReplaceAction = createAction('items/execFindReplace');
+
+
+export const selectChangedItemCount = createSelector(
+    [itemSelectors.selectAll],
+    (list) => {
+    return list.filter(item => item.BinLocation !== (item.newBinLocation ?? item.BinLocation))
+        .length;
 });
 
-export const selectFilteredData = createSelector(
-    [selectItemList, selectItemSearch],
-    (items, search) => {
+export const selectFilteredItems = createSelector(
+    [itemSelectors.selectAll, selectSearch, selectSort],
+    (items, search, sort) => {
         let regex = /\\b/;
         try {
             const _itemFilter = search.replace(/^/, '\\b')
@@ -106,129 +193,18 @@ export const selectFilteredData = createSelector(
             regex = new RegExp(_itemFilter, 'i');
         } catch (err: unknown) {
         }
-        return Object.values(items)
-            .filter(item => !search || regex.test(item.ItemCode) || regex.test(item.ItemCodeDesc || '') || regex.test(item.BinLocation || ''));
-    }
-)
-
-export const selectFilteredDataLength = createSelector([selectFilteredData], (data) => data.length);
-
-export const selectPagedItemList = createSelector(
-    [selectFilteredData, selectTableSort(itemListTableKey), selectCurrentPage(itemListTableKey), selectRowsPerPage(itemListTableKey)],
-    (items, sort, page, rowsPerPage) => {
         return items
-            .sort(binLocationSorter(sort as BinLocationSortProps))
-            .filter(pageFilter(page, rowsPerPage));
+            .filter(item => !search || item.ItemCode.toLowerCase().includes(search.toLowerCase())
+                || (item.ItemCodeDesc ?? '').toLowerCase().includes(search.toLowerCase())
+                || (item.BinLocation ?? '').toLowerCase().includes(search.toLowerCase())
+            )
+            .sort(binLocationSorter(sort));
     }
 )
 
-export interface ItemsState {
-    list: BinLocationList,
-    loading: boolean,
-    loaded: boolean,
-    search: string,
-    find: string,
-    replace: string,
-    filters: {
-        warehouseCode: string,
-        item: string,
-        binLocation: string,
+export const selectToggledItems = createSelector(
+    [itemSelectors.selectAll],
+    (list) => {
+        return list.filter(item => item.selected);
     }
-}
-
-const defaultState: ItemsState = {
-    list: {},
-    loading: false,
-    loaded: false,
-    search: '',
-    find: '',
-    replace: '',
-    filters: {
-        warehouseCode: '000',
-        item: '',
-        binLocation: '',
-    }
-}
-
-const reducer = createReducer(defaultState, (builder) => {
-    builder
-        .addCase(loadItemsListAction.pending, (state, action) => {
-            state.loading = true;
-        })
-        .addCase(loadItemsListAction.rejected, (state) => {
-            state.loading = false;
-        })
-        .addCase(loadItemsListAction.fulfilled, (state, action) => {
-            state.loading = false;
-            state.loaded = true;
-            state.list = action.payload.list;
-        })
-        .addCase(toggleItemSelectedAction, (state, action) => {
-            state.list[action.payload.key].selected = action.payload.force ?? !state.list[action.payload.key].selected;
-        })
-        .addCase(setItemEditing, (state, action) => {
-            const key = action.payload;
-            state.list[key].editing = true;
-            state.list[key].newBinLocation = state.list[key].BinLocation;
-        })
-        .addCase(setItemAction, (state, action) => {
-            const {key} = action.payload
-            state.list[key] = {...action.payload, changed: false};
-        })
-        .addCase(updateItemAction, (state, action) => {
-            state.list[action.payload.key].newBinLocation = action.payload.bin;
-            state.list[action.payload.key].changed = true;
-        })
-        .addCase(undoItemChange, (state, action) => {
-            const key = action.payload;
-            state.list[key].newBinLocation = undefined;
-            state.list[key].editing = false;
-            state.list[key].changed = false;
-        })
-        .addCase(setSearch, (state, action) => {
-            state.search = action.payload || '';
-        })
-        .addCase(setFindAction, (state, action) => {
-            state.find = action.payload || '';
-        })
-        .addCase(setReplaceAction, (state, action) => {
-            state.replace = action.payload || '';
-        })
-        .addCase(setExecFindReplaceAction, (state, action) => {
-            const values = Object.values(state.list);
-            values
-                .filter(item => item.selected)
-                .filter(item => item.BinLocation?.includes(state.find))
-                .forEach(item => {
-                    state.list[item.key].newBinLocation = item.BinLocation?.replace(state.find, state.replace) || '';
-                    state.list[item.key].changed = true;
-                    state.list[item.key].editing = true;
-                });
-            state.replace = '';
-        })
-        .addCase(saveItemAction.pending, (state, action) => {
-            const {key} = action.meta.arg
-            state.list[key].saving = true;
-        })
-        .addCase(saveItemAction.rejected, (state, action) => {
-            const {key} = action.meta.arg
-            state.list[key].saving = false;
-        })
-        .addCase(saveItemAction.fulfilled, (state, action) => {
-            const {key} = action.payload.item;
-            state.list[key] = action.payload.item;
-        })
-        .addCase(setWarehouseFilterAction, (state, action) => {
-            state.filters.warehouseCode = action.payload || '';
-        })
-        .addCase(setItemFilterAction, (state, action) => {
-            state.filters.item = action.payload || '';
-        })
-        .addCase(setBinLocationFilter, (state, action) => {
-            state.filters.binLocation = action.payload || '';
-        })
-
-})
-
-
-export default reducer;
+)

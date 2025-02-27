@@ -1,17 +1,16 @@
 import {configureStore} from '@reduxjs/toolkit'
 import {combineReducers} from "redux";
-import {alertsReducer, pageSetsReducer, tablesReducer, tabsReducer} from "chums-connected-components";
 import {TypedUseSelectorHook, useDispatch, useSelector} from "react-redux";
-import {default as warehouseReducer} from '../ducks/warehouse';
-import {default as itemsReducer} from '../ducks/items';
+import warehouseSlice from '../ducks/warehouse';
+import itemsSlice from '../ducks/items';
+import itemStatusSlice from "@/ducks/item-status";
+import {alertsSlice} from "@chumsinc/alert-list";
 
 const rootReducer = combineReducers({
-    alerts: alertsReducer,
-    items: itemsReducer,
-    pageSets: pageSetsReducer,
-    tables: tablesReducer,
-    tabs: tabsReducer,
-    warehouse: warehouseReducer,
+    [alertsSlice.reducerPath]: alertsSlice.reducer,
+    [itemsSlice.reducerPath]: itemsSlice.reducer,
+    [itemStatusSlice.reducerPath]: itemStatusSlice.reducer,
+    [warehouseSlice.reducerPath]: warehouseSlice.reducer,
 });
 
 const store = configureStore({

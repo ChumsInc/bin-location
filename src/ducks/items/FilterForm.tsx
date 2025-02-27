@@ -1,17 +1,18 @@
 import React, {FormEvent} from 'react';
 import WarehouseSelect from "../warehouse/WarehouseSelect";
-import {useAppDispatch} from "../../app/configureStore";
-import ItemFilter from "./ItemFilter";
+import {useAppDispatch} from "@/app/configureStore";
+import ItemSearch from "./ItemSearch";
 import BinLocationFilter from "./BinLocationFilter";
 import LoadItemsButton from "./LoadItemsButton";
-import {loadItemsListAction} from "./index";
+import {loadItems} from "@/ducks/items/actions";
+import ItemLoadFilter from "@/ducks/items/ItemLoadFilter";
 
 const FilterForm = () => {
     const dispatch = useAppDispatch();
 
     const submitHandler = (ev: FormEvent) => {
         ev.preventDefault();
-        dispatch(loadItemsListAction());
+        dispatch(loadItems());
     }
 
     return (
@@ -20,11 +21,12 @@ const FilterForm = () => {
                 <WarehouseSelect/>
             </div>
             <div className="col-auto">
-                <ItemFilter/>
+                <ItemLoadFilter/>
             </div>
             <div className="col-auto">
                 <BinLocationFilter/>
             </div>
+            <div className="col" />
             <div className="col-auto">
                 <LoadItemsButton/>
             </div>
