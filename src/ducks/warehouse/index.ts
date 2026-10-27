@@ -1,6 +1,6 @@
-import {createEntityAdapter, createSelector, createSlice, PayloadAction} from "@reduxjs/toolkit";
-import {Warehouse} from "chums-types";
-import {RootState} from "@/app/configureStore";
+import {createEntityAdapter, createSelector, createSlice, type PayloadAction} from "@reduxjs/toolkit";
+import type {Warehouse} from "chums-types";
+import type {RootState} from "@/app/configureStore";
 import {loadWarehouses} from "@/ducks/warehouse/actions";
 
 const warehouseAdapter = createEntityAdapter<Warehouse, string>({

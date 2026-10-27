@@ -1,4 +1,3 @@
-import React from 'react';
 import FilterForm from "../ducks/items/FilterForm";
 import ItemList from "../ducks/items/ItemList";
 import AppAlertsList from "@/app/AppAlertsList";

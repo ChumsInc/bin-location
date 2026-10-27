@@ -1,4 +1,3 @@
-import React from 'react';
 import {Col, Row} from "react-bootstrap";
 import ItemSearch from "@/ducks/items/ItemSearch";
 import BinLocationFindReplace from "@/ducks/items/BinLocationFindReplace";

@@ -1,4 +1,4 @@
-import React, {ChangeEvent, useId} from 'react';
+import {type ChangeEvent, useId} from 'react';
 import {useAppDispatch, useAppSelector} from "@/app/configureStore";
 import {selectFilterItem, setItemFilter} from "@/ducks/items/index";
 import {FormControl, InputGroup} from "react-bootstrap";

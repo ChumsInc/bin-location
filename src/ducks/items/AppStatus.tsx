@@ -1,4 +1,3 @@
-import React from 'react';
 import {useAppSelector} from "@/app/configureStore";
 import {selectItemsStatus} from "@/ducks/items/index";
 import {ProgressBar} from "react-bootstrap";

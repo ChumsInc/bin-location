@@ -1,10 +1,10 @@
-import {createAction, createEntityAdapter, createSelector, createSlice, PayloadAction} from "@reduxjs/toolkit";
-import {RootState} from "@/app/configureStore";
+import {createAction, createEntityAdapter, createSelector, createSlice, type PayloadAction} from "@reduxjs/toolkit";
+import type {RootState} from "@/app/configureStore";
 import {itemKey} from "@/api/items";
 import {binLocationSorter} from "./utils";
 import {loadItem, loadItems, saveBinLocation} from "@/ducks/items/actions";
-import {EditableBinLocation, SetSelectedBinLocationArg} from "@/types/bin-location";
-import {SortProps} from "@chumsinc/sortable-tables";
+import type {EditableBinLocation, SetSelectedBinLocationArg} from "@/types/bin-location";
+import type {SortProps} from "@chumsinc/sortable-tables";
 import {dismissAlert} from "@chumsinc/alert-list";
 
 

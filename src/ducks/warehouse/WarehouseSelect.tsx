@@ -1,4 +1,4 @@
-import React, {ChangeEvent, useEffect, useId} from 'react';
+import {type ChangeEvent, useEffect, useId} from 'react';
 import {useSelector} from 'react-redux';
 import {useAppDispatch, useAppSelector} from "@/app/configureStore";
 import {selectFilterWarehouse, setWarehouseFilter} from "../items";

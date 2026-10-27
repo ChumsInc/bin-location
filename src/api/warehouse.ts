@@ -1,9 +1,9 @@
 import {fetchJSON} from "@chumsinc/ui-utils";
-import {Warehouse} from "chums-types";
+import type {Warehouse} from "chums-types";
 
 export const fetchWarehouseList = async ():Promise<Warehouse[]> => {
     try {
-        const url = '/api/search/whse/chums';
+        const url = '/api/search/whse.json';
         const res = await fetchJSON<{result: Warehouse[]}>(url);
         return res?.result ?? [];
     } catch(err:unknown) {

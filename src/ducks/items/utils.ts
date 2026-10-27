@@ -1,5 +1,5 @@
-import {SortProps} from "@chumsinc/sortable-tables";
-import {EditableBinLocation} from "@/types/bin-location";
+import type {SortProps} from "@chumsinc/sortable-tables";
+import type {EditableBinLocation} from "@/types/bin-location";
 import {itemKey} from "@/utils/bin-location";
 
 

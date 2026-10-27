@@ -1,8 +1,8 @@
 import {useSelector} from "react-redux";
 import {useAppDispatch} from "@/app/configureStore";
 import {selectToggledItems, setExecFindReplaceAction} from "./index";
-import React, {ChangeEvent, useEffect, useId} from "react";
-import {EditableBinLocation} from "@/types/bin-location";
+import {type ChangeEvent, useEffect, useId, useState} from "react";
+import type {EditableBinLocation} from "@/types/bin-location";
 import classNames from "classnames";
 import {Button, Col, FormControl, InputGroup, Row} from "react-bootstrap";
 import {saveBinLocation} from "@/ducks/items/actions";
@@ -10,10 +10,10 @@ import {saveBinLocation} from "@/ducks/items/actions";
 const BinLocationFindReplace = () => {
     const dispatch = useAppDispatch();
     const rows = useSelector(selectToggledItems);
-    const [find, setFind] = React.useState("");
-    const [replace, setReplace] = React.useState("");
-    const [pendingChanges, setPendingChanges] = React.useState<EditableBinLocation[]>([]);
-    const [show, setShow] = React.useState(rows.length > 0);
+    const [find, setFind] = useState("");
+    const [replace, setReplace] = useState("");
+    const [pendingChanges, setPendingChanges] = useState<EditableBinLocation[]>([]);
+    const [show, setShow] = useState(rows.length > 0);
     const findId = useId();
     const replaceId = useId();
 

@@ -1,4 +1,4 @@
-import {BinLocation, Editable} from "chums-types";
+import type {BinLocation, Editable} from "chums-types";
 
 export interface EditableBinLocation extends BinLocation, Editable {
     newBinLocation?: string;

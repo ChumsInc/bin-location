@@ -1,8 +1,8 @@
-import React, {ChangeEvent, useEffect, useState} from 'react';
+import  {type ChangeEvent, useEffect, useState} from 'react';
 import {setItemEditing, updateItem} from "./index";
 import Badge from "react-bootstrap/Badge";
 import {useAppDispatch} from "@/app/configureStore";
-import {EditableBinLocation} from "@/types/bin-location";
+import type {EditableBinLocation} from "@/types/bin-location";
 import {Button, FormControl, InputGroup} from "react-bootstrap";
 import {parseBinLocations} from "@/ducks/items/utils";
 
@@ -34,7 +34,7 @@ const BinLocationField = ({item}: BinLocationFieldProps) => {
     }
 
     return (
-        <div className="d-flex flex-row g-1">
+        <div className="d-flex flex-row g-1" style={{gap: '0 0.25rem'}}>
             {!item.editing && (
                 locations.map((loc, index) => (
                     <Badge key={index} bg={bgColor}>{loc}</Badge>)

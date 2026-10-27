@@ -1,5 +1,5 @@
 import {useAppDispatch, useAppSelector} from "@/app/configureStore";
-import {ChangeEvent, useId} from "react";
+import {type ChangeEvent, useId} from "react";
 import {selectSearch, setSearch} from "./index";
 import {FormControl, InputGroup} from "react-bootstrap";
 
@@ -14,7 +14,7 @@ export default function ItemSearch() {
 
     return (
         <InputGroup size="sm">
-            <InputGroup.Text as="label" htmlFor={id}>Item Code</InputGroup.Text>
+            <InputGroup.Text as="label" htmlFor={id}>Filter for Item Code</InputGroup.Text>
             <FormControl type="search" size="sm" id={id} value={value} onChange={changeHandler}/>
         </InputGroup>
     )

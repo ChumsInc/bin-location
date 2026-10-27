@@ -1,5 +1,5 @@
 import {fetchJSON} from "@chumsinc/ui-utils";
-import {BinLocation} from "chums-types";
+import type {BinLocation} from "chums-types";
 
 export const itemKey = (item: Pick<BinLocation, 'WarehouseCode'|'ItemCode'>) => `${item.WarehouseCode}/${item.ItemCode}`.toUpperCase();
 

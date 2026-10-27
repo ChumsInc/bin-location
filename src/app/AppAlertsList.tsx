@@ -1,6 +1,5 @@
-import React from 'react';
 import {useAppDispatch, useAppSelector} from "@/app/configureStore";
-import {AlertList, dismissAlert, selectAllAlerts, StyledErrorAlert} from "@chumsinc/alert-list";
+import {AlertList, dismissAlert, selectAllAlerts, type StyledErrorAlert} from "@chumsinc/alert-list";
 
 export default function AppAlertsList() {
     const dispatch = useAppDispatch();

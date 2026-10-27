@@ -1,5 +1,4 @@
-import React from 'react';
-import {EditableBinLocation} from "@/types/bin-location";
+import type {EditableBinLocation} from "@/types/bin-location";
 import {selectStatusById} from "@/ducks/item-status";
 import {useAppDispatch, useAppSelector} from "@/app/configureStore";
 import {itemKey} from "@/utils/bin-location";

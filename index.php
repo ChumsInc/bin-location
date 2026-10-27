@@ -21,5 +21,5 @@ $ui = new WebUI2([
     'requiredRoles' => [Groups::CS, Groups::PRODUCTION, Groups::SALES],
 ]);
 $ui->addCSS('public/bin-location.css', CSSOptions::parse(['useTimestampVersion' => true]))
-    ->addManifestJSON('public/js/manifest.json')
+    ->addViteManifest()
     ->render();

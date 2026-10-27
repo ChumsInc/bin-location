@@ -1,9 +1,9 @@
-import {ReactNode} from "react";
+import type {ReactNode} from "react";
 import {useAppDispatch} from "@/app/configureStore";
 import {setItemEditing, updateItem} from "./index";
 import {parseBinLocations, SwipeableBinLocation} from "./utils";
 import {useSwipeable} from "react-swipeable";
-import {EditableBinLocation} from "@/types/bin-location";
+import type {EditableBinLocation} from "@/types/bin-location";
 
 export interface SwipeContainerProps {
     item: EditableBinLocation;

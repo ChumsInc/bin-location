@@ -1,7 +1,7 @@
 import {useAppDispatch} from "@/app/configureStore";
 import {toggleSelected} from "./index";
-import {ChangeEvent, useId} from "react";
-import {EditableBinLocation} from "@/types/bin-location";
+import {type ChangeEvent, useId} from "react";
+import type {EditableBinLocation} from "@/types/bin-location";
 import {FormCheck} from "react-bootstrap";
 
 export interface ItemToggleProps {

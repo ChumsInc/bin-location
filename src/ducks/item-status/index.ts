@@ -1,8 +1,8 @@
 import {createEntityAdapter, createSlice} from "@reduxjs/toolkit";
 import {itemKey, loadItemKey} from "@/utils/bin-location";
-import {ItemStatus} from "@/types/bin-location";
+import type {ItemStatus} from "@/types/bin-location";
 import {loadItem, loadItems, saveBinLocation} from "@/ducks/items/actions";
-import {RootState} from "@/app/configureStore";
+import type {RootState} from "@/app/configureStore";
 
 const itemStatusAdapter = createEntityAdapter<ItemStatus, string>({
     selectId: (arg) => arg.key,

@@ -1,6 +1,6 @@
 import {configureStore} from '@reduxjs/toolkit'
 import {combineReducers} from "redux";
-import {TypedUseSelectorHook, useDispatch, useSelector} from "react-redux";
+import {type TypedUseSelectorHook, useDispatch, useSelector} from "react-redux";
 import warehouseSlice from '../ducks/warehouse';
 import itemsSlice from '../ducks/items';
 import itemStatusSlice from "@/ducks/item-status";

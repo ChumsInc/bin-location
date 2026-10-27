@@ -1,8 +1,8 @@
 import {useAppDispatch, useAppSelector} from "@/app/configureStore";
 import {useSelector} from "react-redux";
 import {selectFilteredItems, selectPage, selectRowsPerPage, toggleManySelected} from "./index";
-import {ChangeEvent, useEffect, useId, useRef, useState} from "react";
-import {EditableBinLocation} from "@/types/bin-location";
+import {type ChangeEvent, useEffect, useId, useRef, useState} from "react";
+import type {EditableBinLocation} from "@/types/bin-location";
 import {FormCheck} from "react-bootstrap";
 
 export default function SelectAll() {

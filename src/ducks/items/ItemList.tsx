@@ -1,4 +1,3 @@
-import React from 'react';
 import {useSelector} from 'react-redux';
 import BinLocationField from "./BinLocationField";
 import {useAppDispatch, useAppSelector} from "@/app/configureStore";
@@ -15,8 +14,8 @@ import ItemToggle from "./ItemToggle";
 import SwipeContainer from "./SwipeContainer";
 import SelectAll from "./SelectAll";
 import ActionLabel from "./ActionLabel";
-import {SortableTable, SortableTableField, SortProps, TablePagination} from "@chumsinc/sortable-tables";
-import {EditableBinLocation} from "@/types/bin-location";
+import {SortableTable, type SortableTableField, type SortProps, TablePagination} from "@chumsinc/sortable-tables";
+import type {EditableBinLocation} from "@/types/bin-location";
 import {itemKey} from "@/utils/bin-location";
 import SaveItemButton from "@/ducks/items/SaveItemButton";
 

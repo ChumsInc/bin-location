@@ -1,5 +1,5 @@
-import {BinLocation} from "chums-types";
-import {FetchBinLocationArg} from "@/src/api/items";
+import type {BinLocation} from "chums-types";
+import type {FetchBinLocationArg} from "@/api/items";
 
 
 export const itemKey = (arg: Pick<BinLocation, 'WarehouseCode' | 'ItemCode'>) => {

@@ -1,6 +1,6 @@
 import {useAppDispatch} from "@/app/configureStore";
 import {useSelector} from "react-redux";
-import {ChangeEvent} from "react";
+import type {ChangeEvent} from "react";
 import {selectFilterBinLocation, setBinLocationFilter} from "./index";
 
 const BinLocationFilter = () => {

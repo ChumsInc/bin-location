@@ -1,15 +1,15 @@
 import {createAsyncThunk} from "@reduxjs/toolkit";
-import {BinLocation} from "chums-types";
-import {FetchBinLocationArg, fetchItem, fetchItems, postBinLocation} from "@/api/items";
-import {RootState} from "@/app/configureStore";
+import type {BinLocation} from "chums-types";
+import {type FetchBinLocationArg, fetchItem, fetchItems, postBinLocation} from "@/api/items";
+import type {RootState} from "@/app/configureStore";
 import {selectFilterBinLocation, selectFilterItem, selectFilterWarehouse, selectItemsStatus} from "@/ducks/items/index";
 import {selectStatusById} from "@/ducks/item-status";
 import {itemKey, loadItemKey} from "@/utils/bin-location";
-import {EditableBinLocation} from "@/types/bin-location";
+import type {EditableBinLocation} from "@/types/bin-location";
 
 export const loadItems = createAsyncThunk<BinLocation[], void, { state: RootState }>(
     'items/load',
-    async (arg, {getState}) => {
+    async (_, {getState}) => {
         const state = getState();
         const warehouseCode = selectFilterWarehouse(state);
         const itemCode = selectFilterItem(state);
@@ -17,7 +17,7 @@ export const loadItems = createAsyncThunk<BinLocation[], void, { state: RootStat
         return fetchItems({warehouseCode, itemCode, binLocation});
     },
     {
-        condition: (arg, {getState}) => {
+        condition: (_, {getState}) => {
             const state = getState();
             return selectItemsStatus(state) === 'idle';
         }
